@@ -2,7 +2,7 @@ use std::env;
 use std::fs;
 use std::io;
 
-#[derive(Clone)]
+#[derive(Clone,Debug,Copy)]
 enum TokenType {
     // Single character
     LeftParen, RightParen, LeftBrace, RightBrace, Comma, Dot, Minus, Plus, Semicolon, Slash, Star,
@@ -34,7 +34,9 @@ impl Token {
         }
     }
     fn to_string(&self) -> String {
-        "{self.token_type} {self.lexeme}".to_string()
+        let token = self.token_type;
+        let lexeme = self.lexeme.clone();
+        format!("{:?} {lexeme}", token).to_string()
     }
 }
 
@@ -168,7 +170,7 @@ impl Scanner {
         self.tokens.clone()
     }
     fn get_current_string(&mut self) -> &str {
-        let text = &self.source[self.start..=self.current];
+        let text = &self.source[self.start..self.current];
         text
     }
     fn add_token(&mut self, token_type: TokenType) {
@@ -178,18 +180,18 @@ impl Scanner {
 }
 
 fn main() {
-    let arguments: Vec<String> = env::args().collect();
+    //let arguments: Vec<String> = env::args().collect();
 
-    let argument_number = arguments.len();
+    //let argument_number = arguments.len();
 
-    if argument_number > 1 {
-        println!("Usage: rsjj [filename]");
-        return
-    } else if argument_number == 1 {
-        run_file(&arguments[0]);
-    } else {
+    //if argument_number > 1 {
+    //    println!("Usage: rsjj [filename]");
+    //    return
+    //} else if argument_number == 1 {
+      //  run_file(&arguments[0]);
+    //} else {
         run_prompt();
-    }
+    //}
 }
 
 fn run_file(path: &str) {
