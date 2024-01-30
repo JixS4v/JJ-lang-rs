@@ -92,20 +92,45 @@ impl Scanner {
 
     fn number(&mut self){
         while is_digit(self.peek(0)) {self.current+=1}
-        if self.peek(0) == "." && isDigit(self.peek(1)) {
+        if self.peek(0) == "." && is_digit(self.peek(1)) {
             self.current+=1;
 
             while is_digit(self.peek(0)) {self.current+=1}
         }
-        add_token(TokenType::Number)
+        self.add_token(TokenType::Number)
     }
 
     fn identifier(&mut self) {
-        while is_alphanumeric(peek(0)) {current+=1;}
+        while is_alphanumeric(self.peek(0)) {self.current+=1;}
+        match self.match_symbol() {
+            Some(token_type) => self.add_token(token_type),
+            None => self.add_token(TokenType::Identifier)
+        }
 
-        add_token(TokenType::Identifier);
     }
 
+    fn match_symbol(&mut self) -> Option<TokenType> {
+        let current_text = self.get_current_string();
+        match current_text {
+            "and" => Some(TokenType::And),
+            "class" => Some(TokenType::Class),
+            "else" => Some(TokenType::Else),
+            "false" => Some(TokenType::False),
+            "for" => Some(TokenType::For),
+            "fun" => Some(TokenType::Fun),
+            "if" => Some(TokenType::If),
+            "nil" => Some(TokenType::Nil),
+            "or" => Some(TokenType::Or),
+            "print" => Some(TokenType::Print),
+            "return" => Some(TokenType::Return),
+            "super" => Some(TokenType::Super),
+            "this" => Some(TokenType::This),
+            "true" => Some(TokenType::True),
+            "let" => Some(TokenType::Let),
+            "while" => Some(TokenType::While),
+            _ => None
+        }
+    }
 
     fn scan_token(&mut self) {
         let character = &self.source[self.current..self.current+1];
@@ -129,7 +154,7 @@ impl Scanner {
             "\n" => self.line+=1,
             " " | "\r" | "\t" => (), // Ignore whitespace
             "\"" => self.string(),
-            _ =>  if is_digit(character) {number();} else if is_alpha(character) {identifier();} else{error(self.line, "Unexpected character")}
+            _ =>  if is_digit(character) {self.number();} else if is_alpha(character) {self.identifier();} else{error(self.line, "Unexpected character")}
         }
     }
 
@@ -142,8 +167,12 @@ impl Scanner {
         self.tokens.push(Token::new(TokenType::EOF,"".to_string(),self.line));
         self.tokens.clone()
     }
+    fn get_current_string(&mut self) -> &str {
+        let text = &self.source[self.start..=self.current];
+        text
+    }
     fn add_token(&mut self, token_type: TokenType) {
-        let text: String = self.source[self.start..=self.current].to_string();
+        let text = self.get_current_string().to_string();
         self.tokens.push(Token::new(token_type, text,self.line));
     }
 }
@@ -202,21 +231,21 @@ fn report(line: usize, location: &str, message: &str) {
 }
 
 fn is_digit(character: &str) -> bool {
-    if &str.to_string().chars().nth(0).is_numeric() {
+    if character.to_string().chars().nth(0).unwrap().is_numeric() {
         return true
     }
     return false
 }
 
 fn is_alpha(character: &str) -> bool {
-    if &str.to_string().chars().nth(0).is_alphabetic() {
+    if character.to_string().chars().nth(0).unwrap().is_alphabetic() {
         return true
     }
     return false
 }
 
 fn is_alphanumeric(character: &str) -> bool {
-    if &str.to_string().chars().nth(0).is_alphanumeric() {
+    if character.to_string().chars().nth(0).unwrap().is_alphanumeric() {
         return true
     }
     return false
