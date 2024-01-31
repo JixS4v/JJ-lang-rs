@@ -2,7 +2,7 @@ use std::env;
 use std::fs;
 use std::io;
 
-#[derive(Clone,Debug,Copy)]
+#[derive(Clone,Debug)]
 enum TokenType {
     // Single character
     LeftParen, RightParen, LeftBrace, RightBrace, Comma, Dot, Minus, Plus, Semicolon, Slash, Star,
@@ -11,13 +11,14 @@ enum TokenType {
     Bang, BangEqual, Equal, EqualEqual, Greater, GreaterEqual, Less, LessEqual,
 
     // Literals
-    Identifier, String, Number,
+    Identifier, String(String), Number(f64),
 
     // Keywords
     And, Class, Else, False, Fun, For, If, Nil, Or, Print, Return, Super, This, True, Let, While,
 
     EOF
 }
+
 
 #[derive(Clone)]
 struct Token {
@@ -34,9 +35,10 @@ impl Token {
         }
     }
     fn to_string(&self) -> String {
-        let token = self.token_type;
+        let token = self.token_type.clone();
         let lexeme = self.lexeme.clone();
-        format!("{:?} {lexeme}", token).to_string()
+        let line = self.line;
+        format!("{:?} {lexeme} in line {line}", token).to_string()
     }
 }
 
@@ -88,8 +90,8 @@ impl Scanner {
         }
 
         self.current+=1;
-
-        self.add_token(TokenType::String);
+        let literal = self.get_current_string().to_string();
+        self.add_token(TokenType::String(literal));
     }
 
     fn number(&mut self){
@@ -99,7 +101,8 @@ impl Scanner {
 
             while is_digit(self.peek(0)) {self.current+=1}
         }
-        self.add_token(TokenType::Number)
+        let value: f64 = self.get_current_string().parse().unwrap();
+        self.add_token(TokenType::Number(value))
     }
 
     fn identifier(&mut self) {
@@ -200,10 +203,9 @@ fn run_file(path: &str) {
 }
 
 fn run_prompt() {
-    
     loop {
+        
         let mut current_line = String::new();
-        print!("> ");
         io::stdin()
             .read_line(&mut current_line)
             .expect("Failed to read line");
