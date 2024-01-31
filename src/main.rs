@@ -91,7 +91,7 @@ impl Scanner {
 
         self.current+=1;
         let literal = self.get_current_string().to_string();
-        self.add_token(TokenType::String(literal));
+        self.add_token(TokenType::String(literal[1..literal.len()-1].to_string()));
     }
 
     fn number(&mut self){
